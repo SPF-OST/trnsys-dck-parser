@@ -28,7 +28,7 @@ jobs:
     - name: Static type checking with mypy
       run: mypy --show-error-codes .
     - name: Lint with pylint
-      run: pylint test/trnsys_dck_parser src/trnsys_dck_parser
+      run: pylint test/test_trnsys_dck_parser src/trnsys_dck_parser setup.py
     - name: Test with pytest
       run: pytest test --cov=src --cov-report=html:test-results/coverage --cov-report=term --html=test-results/report/report.html
     - name: Upload test results and coverage reports
