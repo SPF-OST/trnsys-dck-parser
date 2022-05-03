@@ -1,0 +1,8 @@
+pytest
+mypy
+pylint
+black
+
+pip-tools
+
+-e file:.#egg=trnsys_dck_parser
