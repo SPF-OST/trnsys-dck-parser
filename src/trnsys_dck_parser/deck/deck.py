@@ -1,4 +1,4 @@
-__all__ = ["Deck", "Equations", "InlineComment", "create_equations"]
+__all__ = ["Deck", "Equations", "InlineComment"]
 
 import dataclasses as _dc
 import typing as _tp
@@ -29,5 +29,3 @@ class InlineComment(Comment):
     pass
 
 
-def create_equations(equations: str) -> Equations:
-    return Equations()

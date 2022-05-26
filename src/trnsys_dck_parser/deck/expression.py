@@ -7,7 +7,6 @@ __all__ = [
     "create_literal",
     "create_variable",
     "create_variables",
-    "create_expression",
 ]
 
 import typing as _tp
@@ -95,5 +94,3 @@ def create_variables(variables: str) -> _tp.Sequence[Variable]:
     return []
 
 
-def create_expression(expression: str) -> Expression:
-    return Expression()

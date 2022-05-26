@@ -1,15 +1,5 @@
-__all__ = [
-    "Equations",
-    "InlineComment",
-    "create_equations",
-    "Expression",
-    "COS",
-    "create_literal",
-    "create_variable",
-    "create_variables",
-    "create_expression",
-]
+__all__ = ["parse_expression", "parse_equations"]
 
-from .deck import Equations, InlineComment, create_equations
+from .parse.deck import parse_equations
 
-from .expression import Expression, COS, create_literal, create_variable, create_variables, create_expression
+from .parse.expression import parse as parse_expression

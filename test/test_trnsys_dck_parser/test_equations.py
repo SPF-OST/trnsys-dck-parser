@@ -1,4 +1,5 @@
-import trnsys_dck_parser as _tdp
+import trnsys_dck_parser as _parser
+import trnsys_dck_parser.deck as _deck
 
 
 def test_equations_without_placeholders() -> None:
@@ -14,9 +15,9 @@ etaPuAuxBrine = 0.35														! Assumption
 PelPuAuxBrine_kW = (PflowAuxBrine_W/1000)/etaPuAuxBrine						! required pump electric power, kW
 PelPuAuxBri_kW = GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW							! GT(MfrcondIn,0.1)*PelPuAuxBrine_kW		! naming could be better
 """
-    actual_equations = _tdp.create_equations(equations_string)
+    actual_equations = _parser.parse_equations(equations_string)
 
-    expected_equations = _tdp.Equations()
+    expected_equations = _deck.Equations()
 
     expected_equations.add_equation("dpAuxSH_bar", "0.2")
     expected_equations.add_equation("PflowAuxSH_W", "((MfrAuxOut/3600)/RhoWat)*dpAuxSH_bar*100000")
@@ -31,4 +32,4 @@ PelPuAuxBri_kW = GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW							! GT(MfrcondIn,0.1)*Pe
     assert actual_equations == expected_equations
 
     # TODO: check whether comments were parsed correctly
-    assert actual_equations.comments == [_tdp.InlineComment("foo", line=5, column=0)]
+    assert actual_equations.comments == [_deck.InlineComment("foo", line=5, column=0)]
