@@ -1,2 +1,8 @@
 .idea/
 venv/
+
+src/trnsys_dck_parser.egg-info/
+**/__pycache__/
+
+test-results/
+.coverage

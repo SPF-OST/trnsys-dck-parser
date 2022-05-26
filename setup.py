@@ -7,8 +7,10 @@ setuptools.setup(
     author_email="damian.birchler@ost.ch",
     description="A parser for TRNSYS deck files",
     url="https://github.com/SPF-OST/trnsys_dck_parser",
+    include_package_data=True,
+    package_data={"trnsys_dck_parser": ["py.typed"]},
     packages=setuptools.find_packages(),
-    package_dir={"":"src"},
+    package_dir={"": "src"},
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

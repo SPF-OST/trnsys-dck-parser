@@ -23,6 +23,8 @@ colorama==0.4.4
     #   click
     #   pylint
     #   pytest
+coverage[toml]==6.4
+    # via pytest-cov
 dill==0.3.4
     # via pylint
 iniconfig==1.1.1
@@ -45,7 +47,7 @@ pathspec==0.9.0
     # via black
 pep517==0.12.0
     # via pip-tools
-pip-tools==6.6.0
+pip-tools==6.6.2
     # via -r dev-requirements.in
 platformdirs==2.5.2
     # via
@@ -60,10 +62,21 @@ pylint==2.13.8
 pyparsing==3.0.8
     # via packaging
 pytest==7.1.2
+    # via
+    #   -r dev-requirements.in
+    #   pytest-cov
+    #   pytest-html
+    #   pytest-metadata
+pytest-cov==3.0.0
     # via -r dev-requirements.in
+pytest-html==3.1.1
+    # via -r dev-requirements.in
+pytest-metadata==2.0.1
+    # via pytest-html
 tomli==2.0.1
     # via
     #   black
+    #   coverage
     #   mypy
     #   pep517
     #   pylint

@@ -1,0 +1,12 @@
+* Define variables
+EQUATIONS 3
+C_tilt = 35
+tSky = 2
+tAmb = 28
+
+* Multi-line expression with comment
+EQUATIONS 1
+TskyCalc = (1+COS(C_tilt))*0.5*tSky
+                + (1-COS(C_tilt))*0.5*tAmb  ! ambient contribution
+
+END
