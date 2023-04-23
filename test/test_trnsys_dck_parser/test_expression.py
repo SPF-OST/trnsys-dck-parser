@@ -10,21 +10,21 @@ import trnsys_dck_parser.deck as _deck
 @_dc.dataclass
 class _ExpressionTestCase:
     string: str
-    expected_expression: _deck.Expression
+    expected_expression: _deck.ExpressionOrNumber
 
 
 def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     string = "0.2"
-    expression: _deck.Expression = _deck.create_literal(0.2)
+    expression = 0.2
     yield _ExpressionTestCase(string, expression)
 
     string = "7"
-    expression = _deck.create_literal(7)
+    expression = 7
     yield _ExpressionTestCase(string, expression)
 
     string = "(1+COS(C_tilt))*0.5*tSky + (1-COS(C_tilt))*0.5*tAmb"
     t_sky, c_tilt, t_amb = _deck.create_variables("C_tilt tSky tAmb")
-    expression = (1 + _deck.COS(c_tilt)) * 0.5 * t_sky + (1 - _deck.COS(c_tilt)) * 0.5 * t_amb
+    expression = (1 + _deck.cos(c_tilt)) * 0.5 * t_sky + (1 - _deck.cos(c_tilt)) * 0.5 * t_amb
     yield _ExpressionTestCase(string, expression)
 
     string = "((tSky+273.15)**4)*5.67*(10**-8)*3.6"
@@ -38,11 +38,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     yield _ExpressionTestCase(string, expression)
 
 
-def _get_expression_test_params() -> _tp.Sequence[_tp.Any]:
-    return [_pt.param(test_case, id=test_case.string) for test_case in _get_expression_test_cases()]
-
-
-@_pt.mark.parametrize("test_case", _get_expression_test_params())
+@_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
 def test_expression(test_case: _ExpressionTestCase) -> None:
     actual_expression = _parser.parse_expression(test_case.string)
 

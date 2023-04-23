@@ -1,8 +1,8 @@
 __all__ = [
     "Equations",
     "InlineComment",
-    "Expression",
-    "COS",
+    "ExpressionOrNumber",
+    "cos",
     "create_literal",
     "create_variable",
     "create_variables",
@@ -10,4 +10,4 @@ __all__ = [
 
 from .deck import Equations, InlineComment
 
-from .expression import Expression, COS, create_literal, create_variable, create_variables
+from .expression import ExpressionOrNumber, cos, create_literal, create_variable, create_variables
