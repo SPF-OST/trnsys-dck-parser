@@ -49,11 +49,13 @@ class Parser(_com.ParserBase):
 
     def _multiplicand(self) -> _exp.ExpressionOrNumber:
         base = self._power_operand()
-        if self._accept(_tok.Tokens.POWER):
-            exponent = self._power_operand()
-            return base**exponent
 
-        return base
+        if not self._accept(_tok.Tokens.POWER):
+            return base
+
+        exponent = self._power_operand()
+
+        return base**exponent
 
     def _power_operand(self) -> _exp.ExpressionOrNumber:
         if self._accept(_tok.Tokens.LEFT_PAREN):
