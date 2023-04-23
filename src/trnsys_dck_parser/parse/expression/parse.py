@@ -48,6 +48,19 @@ class Parser(_com.ParserBase):
         return multiplicand
 
     def _multiplicand(self) -> _exp.ExpressionOrNumber:
+        base = self._power_operand()
+        if self._accept(_tok.Tokens.POWER):
+            exponent = self._power_operand()
+            return base**exponent
+
+        return base
+
+    def _power_operand(self) -> _exp.ExpressionOrNumber:
+        if self._accept(_tok.Tokens.LEFT_PAREN):
+            expression = self._expression()
+            self._expect(_tok.Tokens.RIGHT_PAREN)
+            return expression
+
         if integer := self._accept(_tok.Tokens.INTEGER):
             return int(integer)
         if number := self._accept(_tok.Tokens.FLOAT):
@@ -64,14 +77,7 @@ class Parser(_com.ParserBase):
             self._expect(_tok.Tokens.RIGHT_SQUARE_BRACKET)
             return _exp.UnitOutput(unit_number, output_number)
 
-        parsing_error = _com.ParsingError(
-            "Unrecognized input: expected number, variable, or opening square bracket.",
-            self._current_token.input_string,
-            self._current_token.start_index,
-            self._current_token.end_index
-        )
-
-        raise _com.ParsingErrorException(parsing_error)
+        self._raise_parsing_error("Unrecognized input: expected number, variable, or opening square bracket.")
 
     def _argument_list(self) -> _tp.Sequence[_exp.ExpressionOrNumber]:
         arguments = [self._expression()]
@@ -98,10 +104,4 @@ class Parser(_com.ParserBase):
         if integer >= 0:
             return
 
-        parsing_error = _com.ParsingError(
-            "Unit numbers must be non-negative.",
-            self._current_token.input_string,
-            self._current_token.start_index,
-            self._current_token.end_index,
-        )
-        raise _com.ParsingErrorException(parsing_error)
+        self._raise_parsing_error("Unit numbers must be non-negative.")

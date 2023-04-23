@@ -23,7 +23,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     yield _ExpressionTestCase(string, expression)
 
     string = "(1+COS(C_tilt))*0.5*tSky + (1-COS(C_tilt))*0.5*tAmb"
-    t_sky, c_tilt, t_amb = _deck.create_variables("C_tilt tSky tAmb")
+    t_sky, c_tilt, t_amb = _deck.create_variables("tSky C_tilt tAmb")
     expression = (1 + _deck.cos(c_tilt)) * 0.5 * t_sky + (1 - _deck.cos(c_tilt)) * 0.5 * t_amb
     yield _ExpressionTestCase(string, expression)
 
@@ -35,6 +35,10 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     string = "numModPv2*PvURefMpp*PvIRefMpp/1000"
     num_mod_pv2, pv_u_ref_mpp, pv_i_ref_mpp = _deck.create_variables("numModPv2 PvURefMpp PvIRefMpp")
     expression = num_mod_pv2 * pv_u_ref_mpp * pv_i_ref_mpp / 1000
+    yield _ExpressionTestCase(string, expression)
+
+    string = ""
+    expression = None
     yield _ExpressionTestCase(string, expression)
 
 

@@ -129,7 +129,7 @@ class FunctionBase(_abc.ABC):
     name: str
 
     def _call(self, *arguments: ExpressionOrNumber) -> Expression:
-        return FunctionCall(self.__class__.__name__, *arguments)
+        return FunctionCall(self.name, *arguments)
 
 
 class UnaryFunction(FunctionBase, _abc.ABC):
@@ -137,8 +137,8 @@ class UnaryFunction(FunctionBase, _abc.ABC):
         return self._call(x)
 
 
-sin = UnaryFunction("sin")
-cos = UnaryFunction("cos")
+sin = UnaryFunction("SIN")
+cos = UnaryFunction("COS")
 
 
 def create_literal(literal: Number) -> Number:
