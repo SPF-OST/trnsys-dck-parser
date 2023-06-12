@@ -37,8 +37,60 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     expression = num_mod_pv2 * pv_u_ref_mpp * pv_i_ref_mpp / 1000
     yield _ExpressionTestCase(string, expression)
 
+    string = "numModPv2"
+    expression = _deck.create_variable("numModPv2")
+    yield _ExpressionTestCase(string, expression)
+
+    string = "numModPv2/-uvw"
+    num_mod_pv2, uvw = _deck.create_variables("numModPv2 uvw")
+    expression = num_mod_pv2 / -uvw
+    yield _ExpressionTestCase(string, expression)
+
+    string = "x*y**z"
+    x, y, z = _deck.create_variables("x y z")
+    expression = x * (y**z)
+    yield _ExpressionTestCase(string, expression)
+
     string = ""
-    expression = None
+    expression = _parser.ParsingError(
+        error_message="Expected number, variable, function call, opening "
+        "square bracket or opening parenthesis but found "
+        "end of input",
+        input_string=string,
+        error_start=len(string) - 1,
+    )
+    yield _ExpressionTestCase(string, expression)
+
+    string = "((tSky+)"
+    expression = _parser.ParsingError(
+        error_message="Expected number, variable, function call, opening "
+        "square bracket or opening parenthesis but found "
+        'closing parenthesis (")")',
+        input_string=string,
+        error_start=len(string) - 1,
+    )
+    yield _ExpressionTestCase(string, expression)
+
+    string = "(10**-8"
+    expression = _parser.ParsingError(
+        error_message='Expected closing parenthesis (")") but found end of input.',
+        input_string=string,
+        error_start=len(string),
+    )
+    yield _ExpressionTestCase(string, expression)
+
+    string = "(10**-)"
+    expression = _parser.ParsingError(
+        error_message="Expected number, variable, function call, opening "
+        "square bracket or opening parenthesis but found "
+        'closing parenthesis (")")',
+        input_string=string,
+        error_start=len(string) - 2,
+    )
+    yield _ExpressionTestCase(string, expression)
+
+    string = "foobar 10"
+    expression = _deck.create_variable("foobar")
     yield _ExpressionTestCase(string, expression)
 
 

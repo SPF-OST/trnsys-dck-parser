@@ -7,12 +7,12 @@ from .. import common as _com
 from . import tokenize as _tok
 
 
-class Parser(_com.ParserBase):
+class Parser(_com.ParserBase[_exp.Expression]):
     def __init__(self, input_string: str) -> None:
         lexer = _tok.create_lexer(input_string)
         super().__int__(lexer)
 
-    def parse(self) -> _com.ParserResult[_exp.ExpressionOrNumber]:
+    def parse(self) -> _com.ParserResult[_exp.Expression]:
         self._set_next_token()
         try:
             return self._expression()
@@ -58,15 +58,12 @@ class Parser(_com.ParserBase):
         return base**exponent
 
     def _power_operand(self) -> _exp.ExpressionOrNumber:
-        if self._accept(_tok.Tokens.LEFT_PAREN):
-            expression = self._expression()
-            self._expect(_tok.Tokens.RIGHT_PAREN)
-            return expression
-
         if integer := self._accept(_tok.Tokens.INTEGER):
             return int(integer)
+
         if number := self._accept(_tok.Tokens.FLOAT):
             return float(number)
+
         if identifier := self._accept(_tok.Tokens.IDENTIFIER):
             if not self._accept(_tok.Tokens.LEFT_PAREN):
                 return _exp.Variable(identifier)
@@ -74,12 +71,24 @@ class Parser(_com.ParserBase):
             arguments = self._argument_list()
             self._expect(_tok.Tokens.RIGHT_PAREN)
             return _exp.FunctionCall(identifier, *arguments)
+
         if self._accept(_tok.Tokens.LEFT_SQUARE_BRACKET):
             unit_number, output_number = self._unit_and_output_number()
             self._expect(_tok.Tokens.RIGHT_SQUARE_BRACKET)
             return _exp.UnitOutput(unit_number, output_number)
 
-        self._raise_parsing_error("Unrecognized input: expected number, variable, or opening square bracket.")
+        if self._accept(_tok.Tokens.MINUS):
+            return -self._expression()
+
+        if self._accept(_tok.Tokens.LEFT_PAREN):
+            expression = self._expression()
+            self._expect(_tok.Tokens.RIGHT_PAREN)
+            return expression
+
+        self._raise_parsing_error(
+            "Expected number, variable, function call, opening square bracket or "
+            "opening parenthesis but found {actual_token}"
+        )
 
     def _argument_list(self) -> _tp.Sequence[_exp.ExpressionOrNumber]:
         arguments = [self._expression()]

@@ -20,6 +20,9 @@ ExpressionOrNumber = _tp.Union["Expression", Number]
 
 
 class Expression(_abc.ABC):
+    def __neg__(self) -> "Negation":
+        return Negation(self)
+
     def __add__(self, other: ExpressionOrNumber) -> "Addition":
         return Addition(self, other)
 
@@ -48,31 +51,35 @@ class Expression(_abc.ABC):
         return Power(self, power)
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
 class Literal(Expression):
     value: Number
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
 class UnaryExpression(Expression, _abc.ABC):
-    x: Expression
+    x: Expression = _dc.field(init=False)
+    a: _dc.InitVar[ExpressionOrNumber]
 
-    @staticmethod
-    def create(x: ExpressionOrNumber) -> "UnaryExpression":
-        return UnaryExpression(_wrap_in_literal_if_number(x))
+    def __post_init__(self, a: ExpressionOrNumber):
+        self.x = _wrap_in_literal_if_number(a)
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
+class Negation(UnaryExpression):
+    pass
+
+
+@_dc.dataclass(eq=True)
 class BinaryExpression(Expression, _abc.ABC):
-    x: Expression
-    y: Expression
+    x: Expression = _dc.field(init=False)
+    y: Expression = _dc.field(init=False)
+    a: _dc.InitVar[ExpressionOrNumber]
+    b: _dc.InitVar[ExpressionOrNumber]
 
-    @staticmethod
-    def create(x: ExpressionOrNumber, y: ExpressionOrNumber) -> "BinaryExpression":
-        return BinaryExpression(
-            _wrap_in_literal_if_number(x),
-            _wrap_in_literal_if_number(y)
-        )
+    def __post_init__(self, a: ExpressionOrNumber, b: ExpressionOrNumber):
+        self.x = _wrap_in_literal_if_number(a)
+        self.y = _wrap_in_literal_if_number(b)
 
 
 def _wrap_in_literal_if_number(x: ExpressionOrNumber) -> Expression:
@@ -102,7 +109,7 @@ class Power(BinaryExpression):
     pass
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
 class Variable(Expression):
     name: str
 
@@ -112,19 +119,19 @@ class Variable(Expression):
             raise ValueError(f"Variable names must match the following regex pattern: {pattern.pattern}")
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
 class UnitOutput(Expression):
     unit_number: int
     output_number: int
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
 class FunctionCall(Expression):
     function: str
     arguments: _tp.Sequence[ExpressionOrNumber]
 
 
-@_dc.dataclass(frozen=True)
+@_dc.dataclass(eq=True)
 class FunctionBase(_abc.ABC):
     name: str
 

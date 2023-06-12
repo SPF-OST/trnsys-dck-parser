@@ -22,7 +22,7 @@ ParserResult = _TCo | ParsingError
 
 @_dc.dataclass
 class TokenDefinition:
-    name: str
+    description: str
     pattern: _re.Pattern = _dc.field(init=False)
     regex: _dc.InitVar[str]
 
@@ -34,7 +34,7 @@ class TokenDefinition:
         self.pattern = _re.compile(regex)
 
 
-END_TOKEN = TokenDefinition("END", r"$")
+END_TOKEN = TokenDefinition("end of input", r"$")
 
 
 @_dc.dataclass
@@ -114,13 +114,16 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
 
         return value
 
+    def _accept_end(self) -> bool:
+        return self._current_token.definition == END_TOKEN
+
     def _expect(self, token_definition: TokenDefinition) -> str:
         value = self._accept(token_definition)
         if value:
             return value
 
-        expected_token = token_definition.name
-        actual_token = self._current_token.definition.name
+        expected_token = token_definition.description
+        actual_token = self._current_token.definition.description
 
         self._raise_parsing_error(f"Expected {expected_token} but found {actual_token}.")
 
@@ -130,8 +133,15 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
             raise ParsingErrorException(next_token)
         self._current_token = next_token
 
-    def _raise_parsing_error(self, error_message: str) -> _tp.NoReturn:
-        parsing_error = ParsingError(error_message, self._lexer.input_string, self._lexer.current_pos)
+    def _raise_parsing_error(self, error_message: str, actual_token_key: str = "actual_token") -> _tp.NoReturn:
+        assert self._current_token
+
+        actual_token_description = self._current_token.definition.description
+
+        formatted_error_message = error_message.format(**{actual_token_key: actual_token_description})
+
+        parsing_error = ParsingError(formatted_error_message, self._lexer.input_string, self._current_token.start_index)
+
         raise ParsingErrorException(parsing_error)
 
     @_abc.abstractmethod
