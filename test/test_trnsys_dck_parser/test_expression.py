@@ -85,7 +85,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
         "square bracket or opening parenthesis but found "
         'closing parenthesis (")")',
         input_string=string,
-        error_start=len(string) - 2,
+        error_start=len(string) - 1,
     )
     yield _ExpressionTestCase(string, expression)
 
