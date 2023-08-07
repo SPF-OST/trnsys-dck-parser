@@ -4,13 +4,12 @@ import typing as _tp
 import pytest as _pt
 
 import trnsys_dck_parser as _parser
-import trnsys_dck_parser.deck as _deck
 
 
 @_dc.dataclass
 class _ExpressionTestCase:
     string: str
-    expected_expression: _deck.ExpressionOrNumber
+    expected_expression: _parser.Expression
 
 
 def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
@@ -23,17 +22,17 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     yield _ExpressionTestCase(string, expression)
 
     string = "(1+COS(C_tilt))*0.5*tSky + (1-COS(C_tilt))*0.5*tAmb"
-    t_sky, c_tilt, t_amb = _deck.create_variables("tSky C_tilt tAmb")
-    expression = (1 + _deck.cos(c_tilt)) * 0.5 * t_sky + (1 - _deck.cos(c_tilt)) * 0.5 * t_amb
+    t_sky, c_tilt, t_amb = _parser.create_variables("tSky C_tilt tAmb")
+    expression = (1 + _parser.cos(c_tilt)) * 0.5 * t_sky + (1 - _parser.cos(c_tilt)) * 0.5 * t_amb
     yield _ExpressionTestCase(string, expression)
 
     string = "((tSky+273.15)**4)*5.67*(10**-8)*3.6"
-    t_sky = _deck.create_variable("tSky")
-    expression = (t_sky + 273.15) ** 4 * 5.67 * _deck.create_literal(10) ** -8 * 3.6
+    t_sky = _parser.create_variable("tSky")
+    expression = (t_sky + 273.15) ** 4 * 5.67 * _parser.create_literal(10) ** -8 * 3.6
     yield _ExpressionTestCase(string, expression)
 
     string = "numModPv2*PvURefMpp*PvIRefMpp/1000"
-    num_mod_pv2, pv_u_ref_mpp, pv_i_ref_mpp = _deck.create_variables("numModPv2 PvURefMpp PvIRefMpp")
+    num_mod_pv2, pv_u_ref_mpp, pv_i_ref_mpp = _parser.create_variables("numModPv2 PvURefMpp PvIRefMpp")
     expression = num_mod_pv2 * pv_u_ref_mpp * pv_i_ref_mpp / 1000
     yield _ExpressionTestCase(string, expression)
 

@@ -1,5 +1,5 @@
-from trnsys_dck_parser.deck import Equations
+import trnsys_dck_parser.model as _model
 
 
-def parse_equations(equations: str) -> Equations:
-    return Equations()
+def parse_equations(equations: str) -> _model.Equations:
+    return _model.Equations()

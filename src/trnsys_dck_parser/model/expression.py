@@ -1,51 +1,47 @@
 __all__ = [
-    "ExpressionOrNumber",
+    "Expression",
     "Variable",
     "FunctionCall",
     "cos",
-    "create_variable",
-    "create_variables",
+    "sin"
 ]
 
 import abc as _abc
 import dataclasses as _dc
 import typing as _tp
 
-import trnsys_dck_parser.common as _pcom
-
-
-Number = int | float
+Number = _tp.Union[int, float]
 
 ExpressionOrNumber = _tp.Union["Expression", Number]
 
 
 class Expression(_abc.ABC):
     def __add__(self, other: ExpressionOrNumber) -> "Addition":
-        return Addition(self, other)
+        return _create_binary_expression(Addition, self, other)
 
     def __radd__(self, other: ExpressionOrNumber) -> "Addition":
-        return Addition(other, self)
+        return _create_binary_expression(Addition, other, self)
 
     def __sub__(self, other: ExpressionOrNumber) -> "Subtraction":
-        return Subtraction(self, other)
+        return _create_binary_expression(Subtraction, self, other)
 
     def __rsub__(self, other: ExpressionOrNumber) -> "Subtraction":
-        return Subtraction(other, self)
+        return _create_binary_expression(Subtraction, other, self)
 
     def __mul__(self, other: ExpressionOrNumber) -> "Multiplication":
-        return Multiplication(self, other)
+        return _create_binary_expression(Multiplication, self, other)
 
     def __rmul__(self, other: ExpressionOrNumber) -> "Multiplication":
-        return Multiplication(other, self)
+        return _create_binary_expression(Multiplication, other, self)
 
     def __truediv__(self, other: ExpressionOrNumber) -> "Division":
-        return Division(self, other)
+        return _create_binary_expression(Division, self, other)
 
     def __rtruediv__(self, other: ExpressionOrNumber) -> "Division":
-        return Division(self, other)
+        return _create_binary_expression(Division, other, self)
 
     def __pow__(self, power: ExpressionOrNumber) -> "Power":
-        return Power(self, power)
+        return _create_binary_expression(Power, self, power)
 
 
 @_dc.dataclass(frozen=True)
@@ -57,22 +53,20 @@ class Literal(Expression):
 class UnaryExpression(Expression, _abc.ABC):
     x: Expression
 
-    @staticmethod
-    def create(x: ExpressionOrNumber) -> "UnaryExpression":
-        return UnaryExpression(_wrap_in_literal_if_number(x))
-
 
 @_dc.dataclass(frozen=True)
 class BinaryExpression(Expression, _abc.ABC):
     x: Expression
     y: Expression
 
-    @staticmethod
-    def create(x: ExpressionOrNumber, y: ExpressionOrNumber) -> "BinaryExpression":
-        return BinaryExpression(
-            _wrap_in_literal_if_number(x),
-            _wrap_in_literal_if_number(y)
-        )
+
+_T = _tp.TypeVar("_T", bound=BinaryExpression)
+
+
+def _create_binary_expression(clazz: _tp.Type[_T], x: ExpressionOrNumber, y: ExpressionOrNumber) -> _T:
+    xx = _wrap_in_literal_if_number(x)
+    yy = _wrap_in_literal_if_number(y)
+    return clazz(xx, yy)
 
 
 def _wrap_in_literal_if_number(x: ExpressionOrNumber) -> Expression:
@@ -106,11 +100,6 @@ class Power(BinaryExpression):
 class Variable(Expression):
     name: str
 
-    def __post_init__(self):
-        pattern = _pcom.IDENTIFIER_PATTERN
-        if not pattern.fullmatch(self.name):
-            raise ValueError(f"Variable names must match the following regex pattern: {pattern.pattern}")
-
 
 @_dc.dataclass(frozen=True)
 class UnitOutput(Expression):
@@ -139,15 +128,3 @@ class UnaryFunction(FunctionBase, _abc.ABC):
 
 sin = UnaryFunction("SIN")
 cos = UnaryFunction("COS")
-
-
-def create_literal(literal: Number) -> Number:
-    return literal
-
-
-def create_variable(variable: str) -> Variable:
-    return Variable(variable)
-
-
-def create_variables(variables: str) -> _tp.Sequence[Variable]:
-    return [Variable(v) for v in variables.split()]

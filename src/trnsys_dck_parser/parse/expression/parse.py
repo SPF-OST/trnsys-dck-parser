@@ -1,8 +1,7 @@
 import typing as _tp
 
-import trnsys_dck_parser.deck.expression as _exp
-
-from .. import common as _com
+import trnsys_dck_parser.model.expression as _exp
+import trnsys_dck_parser.parse.common as _com
 
 from . import tokenize as _tok
 

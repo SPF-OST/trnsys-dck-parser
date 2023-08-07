@@ -1,6 +1,4 @@
-import trnsys_dck_parser.common as _pcom
-
-from .. import common as _com
+import trnsys_dck_parser.parse.common as _com
 
 
 class Tokens:
@@ -9,7 +7,7 @@ class Tokens:
     LEFT_SQUARE_BRACKET = _com.TokenDefinition("LEFT_SQUARE_BRACKET", r"\[")
     RIGHT_SQUARE_BRACKET = _com.TokenDefinition("RIGHT_SQUARE_BRACKET", r"\]")
     COMMA = _com.TokenDefinition("COMMA", r",")
-    IDENTIFIER = _com.TokenDefinition("IDENTIFIER", _pcom.IDENTIFIER_PATTERN.pattern)
+    IDENTIFIER = _com.TokenDefinition("IDENTIFIER", r"[a-zA-Z]+[a-zA-Z0-9\-_]*")
     PLUS = _com.TokenDefinition("PLUS", r"\+")
     MINUS = _com.TokenDefinition("MINUS", r"-")
     TIMES = _com.TokenDefinition("TIMES", r"\*", priority=1)

@@ -17,7 +17,7 @@ class ParsingError:
 
 _TCo = _tp.TypeVar("_TCo", covariant=True)
 
-ParserResult = _TCo | ParsingError
+ParserResult = _tp.Union[_TCo, ParsingError]
 
 
 @_dc.dataclass
@@ -46,7 +46,7 @@ class Token:
     end_index: int
 
 
-LexerResult = Token | ParsingError
+LexerResult = _tp.Union[Token, ParsingError]
 
 
 @_dc.dataclass
@@ -104,7 +104,7 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
         self._lexer = lexer
         self._current_token: _tp.Optional[Token]
 
-    def _accept(self, token_definition: TokenDefinition) -> str | None:
+    def _accept(self, token_definition: TokenDefinition) -> _tp.Optional[str]:
         if self._current_token.definition != token_definition:
             return None
 
@@ -137,3 +137,8 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
     @_abc.abstractmethod
     def parse(self) -> ParserResult[_TCo]:
         raise NotImplementedError()
+
+
+def raise_if_error(result: ParserResult[_TCo]) -> None:
+    if isinstance(result, ParsingError):
+        raise ParsingErrorException(result)
