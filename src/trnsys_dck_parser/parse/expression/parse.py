@@ -101,18 +101,18 @@ class Parser(_com.ParserBase[_exp.Expression]):
     def _unit_and_output_number(self) -> _tp.Tuple[int, int]:
         self._expect(_tok.Tokens.INTEGER)
         unit_number = int(self._current_token.value)
-        self._check_non_negative(unit_number)
+        self._check_non_negative(unit_number, "Unit number")
 
         self._expect(_tok.Tokens.COMMA)
 
         self._expect(_tok.Tokens.INTEGER)
         output_number = int(self._current_token.value)
-        self._check_non_negative(unit_number)
+        self._check_non_negative(output_number, "Output number")
 
         return unit_number, output_number
 
-    def _check_non_negative(self, integer):
+    def _check_non_negative(self, integer: int, what: str) -> None:
         if integer >= 0:
             return
 
-        self._raise_parsing_error("Unit numbers must be non-negative.")
+        self._raise_parsing_error(f"{what} numbers must be non-negative.")
