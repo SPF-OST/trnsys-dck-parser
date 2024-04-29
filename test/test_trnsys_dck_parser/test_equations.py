@@ -1,5 +1,6 @@
 import trnsys_dck_parser as _parser
-import trnsys_dck_parser.deck as _deck
+import trnsys_dck_parser.build as _build
+import trnsys_dck_parser.model.equations as _meqs
 
 
 def test_equations_without_placeholders() -> None:
@@ -17,17 +18,21 @@ PelPuAuxBri_kW = GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW							! GT(MfrcondIn,0.1)*Pe
 """
     actual_equations = _parser.parse_equations(equations_string)
 
-    expected_equations = _deck.Equations()
+    expected_n_equations = 9
 
-    expected_equations.add_equation("dpAuxSH_bar", "0.2")
-    expected_equations.add_equation("PflowAuxSH_W", "((MfrAuxOut/3600)/RhoWat)*dpAuxSH_bar*100000")
-    expected_equations.add_equation("etaPuAuxSh", "0.35")
-    expected_equations.add_equation("PelPuAuxSH_kW", "(PflowAuxSH_W/1000)/etaPuAuxSH")
-    expected_equations.add_equation("dpAuxBrine_bar", "0.3")
-    expected_equations.add_equation("PflowAuxBrine_W", "((MfrAuxEvapOut/3600)/RhoBri)*dpAuxBrine_bar*100000")
-    expected_equations.add_equation("etaPuAuxBrine", "0.35")
-    expected_equations.add_equation("PelPuAuxBrine_kW", "(PflowAuxBrine_W/1000)/etaPuAuxBrine")
-    expected_equations.add_equation("PelPuAuxBri_kW", "GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW")
+    all_expected_equations = [
+        _build.create_equation("dpAuxSH_bar", "0.2"),
+        _build.create_equation("PflowAuxSH_W", "((MfrAuxOut/3600)/RhoWat)*dpAuxSH_bar*100000"),
+        _build.create_equation("etaPuAuxSh", "0.35"),
+        _build.create_equation("PelPuAuxSH_kW", "(PflowAuxSH_W/1000)/etaPuAuxSH"),
+        _build.create_equation("dpAuxBrine_bar", "0.3"),
+        _build.create_equation("PflowAuxBrine_W", "((MfrAuxEvapOut/3600)/RhoBri)*dpAuxBrine_bar*100000"),
+        _build.create_equation("etaPuAuxBrine", "0.35"),
+        _build.create_equation("PelPuAuxBrine_kW", "(PflowAuxBrine_W/1000)/etaPuAuxBrine"),
+        _build.create_equation("PelPuAuxBri_kW", "GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW"),
+    ]
+
+    expected_equations = _meqs.Equations(expected_n_equations, all_expected_equations)
 
     assert actual_equations == expected_equations
 

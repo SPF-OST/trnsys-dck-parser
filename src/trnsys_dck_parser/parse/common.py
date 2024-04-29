@@ -5,19 +5,26 @@ import typing as _tp
 
 
 @_dc.dataclass
-class ParsingError:
+class ParseError:
     error_message: str
     input_string: str
-    error_string: str = _dc.field(init=False)
-    error_start: _dc.InitVar[int]
+    error_start: int
 
-    def __post_init__(self, error_start: int) -> None:
-        self.error_string = self.input_string[error_start:]
+    @property
+    def error_string(self) -> str:
+        return self.input_string[self.error_start :]
 
 
 _TCo = _tp.TypeVar("_TCo", covariant=True)
 
-ParserResult = _TCo | ParsingError
+
+@_dc.dataclass
+class ParseSuccess(_tp.Generic[_TCo]):
+    value: _TCo
+    start_index_of_non_consumed_string: int
+
+
+ParserResult = ParseSuccess[_TCo] | ParseError
 
 
 @_dc.dataclass
@@ -42,16 +49,16 @@ class Token:
     definition: TokenDefinition
     value: str
     input_string: str
-    start_index: int
-    end_index: int
+    start_index_inclusive: int
+    end_index_exclusive: int
 
 
-LexerResult = Token | ParsingError
+LexerResult = Token | ParseError
 
 
 @_dc.dataclass
 class ParsingErrorException(Exception):
-    parsing_error: ParsingError
+    parsing_error: ParseError
 
 
 _WHITESPACE = _re.compile(r"[ \t]+")
@@ -83,7 +90,7 @@ class Lexer:
                 token_definition = Token(token_definition, match.group(), self.input_string, match.start(), match.end())
                 return token_definition
 
-        parsing_error = ParsingError(
+        parsing_error = ParseError(
             "Not a recognized token.",
             self.input_string,
             self.current_pos,
@@ -102,7 +109,8 @@ class Lexer:
 class ParserBase(_tp.Generic[_TCo], _abc.ABC):
     def __int__(self, lexer: Lexer) -> None:
         self._lexer = lexer
-        self._current_token: _tp.Optional[Token]
+        self._current_token: _tp.Optional[Token] = None
+        self._remaining_input_string_start_index = 0
 
     def _accept(self, token_definition: TokenDefinition) -> str | None:
         if self._current_token.definition != token_definition:
@@ -119,7 +127,7 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
 
     def _expect(self, token_definition: TokenDefinition) -> str:
         value = self._accept(token_definition)
-        if value:
+        if value is not None:
             return value
 
         expected_token = token_definition.description
@@ -128,8 +136,11 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
         self._raise_parsing_error(f"Expected {expected_token} but found {actual_token}.")
 
     def _set_next_token(self) -> None:
+        if self._current_token:
+            self._remaining_input_string_start_index = self._current_token.end_index_exclusive
+
         next_token = self._lexer.get_next_token()
-        if isinstance(next_token, ParsingError):
+        if isinstance(next_token, ParseError):
             raise ParsingErrorException(next_token)
         self._current_token = next_token
 
@@ -140,10 +151,10 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
 
         formatted_error_message = error_message.format(**{actual_token_key: actual_token_description})
 
-        parsing_error = ParsingError(formatted_error_message, self._lexer.input_string, self._current_token.start_index)
+        parsing_error = ParseError(formatted_error_message, self._lexer.input_string, self._current_token.start_index_inclusive)
 
         raise ParsingErrorException(parsing_error)
 
     @_abc.abstractmethod
-    def parse(self) -> ParserResult[_TCo]:
+    def parse(self) -> ParserResult:
         raise NotImplementedError()

@@ -1,5 +1,4 @@
 __all__ = [
-    "ExpressionOrNumber",
     "Variable",
     "FunctionCall",
     "cos",
@@ -14,41 +13,39 @@ import typing as _tp
 import trnsys_dck_parser.common as _pcom
 
 
-Number = int | float
-
-ExpressionOrNumber = _tp.Union["Expression", Number]
-
-
 class Expression(_abc.ABC):
     def __neg__(self) -> "Negation":
         return Negation(self)
 
-    def __add__(self, other: ExpressionOrNumber) -> "Addition":
+    def __add__(self, other: "Expression") -> "Addition":
         return Addition(self, other)
 
-    def __radd__(self, other: ExpressionOrNumber) -> "Addition":
+    def __radd__(self, other: "Expression") -> "Addition":
         return Addition(other, self)
 
-    def __sub__(self, other: ExpressionOrNumber) -> "Subtraction":
+    def __sub__(self, other: "Expression") -> "Subtraction":
         return Subtraction(self, other)
 
-    def __rsub__(self, other: ExpressionOrNumber) -> "Subtraction":
+    def __rsub__(self, other: "Expression") -> "Subtraction":
         return Subtraction(other, self)
 
-    def __mul__(self, other: ExpressionOrNumber) -> "Multiplication":
+    def __mul__(self, other: "Expression") -> "Multiplication":
         return Multiplication(self, other)
 
-    def __rmul__(self, other: ExpressionOrNumber) -> "Multiplication":
+    def __rmul__(self, other: "Expression") -> "Multiplication":
         return Multiplication(other, self)
 
-    def __truediv__(self, other: ExpressionOrNumber) -> "Division":
+    def __truediv__(self, other: "Expression") -> "Division":
         return Division(self, other)
 
-    def __rtruediv__(self, other: ExpressionOrNumber) -> "Division":
+    def __rtruediv__(self, other: "Expression") -> "Division":
         return Division(self, other)
 
-    def __pow__(self, power: ExpressionOrNumber) -> "Power":
+    def __pow__(self, power: "Expression") -> "Power":
         return Power(self, power)
+
+
+Number = int | float
 
 
 @_dc.dataclass(eq=True)
@@ -58,11 +55,7 @@ class Literal(Expression):
 
 @_dc.dataclass(eq=True)
 class UnaryExpression(Expression, _abc.ABC):
-    x: Expression = _dc.field(init=False)
-    a: _dc.InitVar[ExpressionOrNumber]
-
-    def __post_init__(self, a: ExpressionOrNumber):
-        self.x = _wrap_in_literal_if_number(a)
+    x: Expression
 
 
 @_dc.dataclass(eq=True)
@@ -72,21 +65,8 @@ class Negation(UnaryExpression):
 
 @_dc.dataclass(eq=True)
 class BinaryExpression(Expression, _abc.ABC):
-    x: Expression = _dc.field(init=False)
-    y: Expression = _dc.field(init=False)
-    a: _dc.InitVar[ExpressionOrNumber]
-    b: _dc.InitVar[ExpressionOrNumber]
-
-    def __post_init__(self, a: ExpressionOrNumber, b: ExpressionOrNumber):
-        self.x = _wrap_in_literal_if_number(a)
-        self.y = _wrap_in_literal_if_number(b)
-
-
-def _wrap_in_literal_if_number(x: ExpressionOrNumber) -> Expression:
-    if isinstance(x, Expression):
-        return x
-
-    return Literal(x)
+    x: Expression
+    y: Expression
 
 
 class Addition(BinaryExpression):
@@ -128,33 +108,21 @@ class UnitOutput(Expression):
 @_dc.dataclass(eq=True)
 class FunctionCall(Expression):
     function: str
-    arguments: _tp.Sequence[ExpressionOrNumber]
+    arguments: _tp.Sequence[Expression]
 
 
 @_dc.dataclass(eq=True)
 class FunctionBase(_abc.ABC):
     name: str
 
-    def _call(self, *arguments: ExpressionOrNumber) -> Expression:
+    def _call(self, *arguments: Expression) -> Expression:
         return FunctionCall(self.name, *arguments)
 
 
 class UnaryFunction(FunctionBase, _abc.ABC):
-    def __call__(self, x: ExpressionOrNumber):
+    def __call__(self, x: Expression):
         return self._call(x)
 
 
 sin = UnaryFunction("SIN")
 cos = UnaryFunction("COS")
-
-
-def create_literal(literal: Number) -> Number:
-    return literal
-
-
-def create_variable(variable: str) -> Variable:
-    return Variable(variable)
-
-
-def create_variables(variables: str) -> _tp.Sequence[Variable]:
-    return [Variable(v) for v in variables.split()]

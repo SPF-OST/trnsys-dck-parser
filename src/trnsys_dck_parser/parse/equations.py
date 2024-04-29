@@ -1,34 +1,24 @@
-import dataclasses as _dc
 import typing as _tp
 
 import trnsys_dck_parser.model.expression as _exp
 
 from .. import common as _com
 
-from . import tokenize as _tok
-
-
-@_dc.dataclass
-class ExpressionWithRemainingStartIndex:
-    expression: _exp.Expression
-    remaining_input_string_start_index: int
-
+class Tokenizer(_com)
 
 class Parser(_com.ParserBase[_exp.Expression]):
     def __init__(self, input_string: str) -> None:
         lexer = _tok.create_lexer(input_string)
         super().__int__(lexer)
 
-    def parse(self) -> _com.ParserResult:
+    def parse(self) -> _com.ParserResult[_exp.Expression]:
         self._set_next_token()
         try:
-            expression = self._expression()
-            parseSuccess = _com.ParseSuccess(expression, self._remaining_input_string_start_index)
-            return parseSuccess
+            return self._expression()
         except _com.ParsingErrorException as exception:
             return exception.parsing_error
 
-    def _expression(self) -> _exp.Expression:
+    def _expression(self) -> _exp.ExpressionOrNumber:
         addend = self._addend()
         while True:
             if self._accept(_tok.Tokens.PLUS):
@@ -42,7 +32,7 @@ class Parser(_com.ParserBase[_exp.Expression]):
 
         return addend
 
-    def _addend(self) -> _exp.Expression:
+    def _addend(self) -> _exp.ExpressionOrNumber:
         multiplicand = self._multiplicand()
         while True:
             if self._accept(_tok.Tokens.TIMES):
@@ -56,7 +46,7 @@ class Parser(_com.ParserBase[_exp.Expression]):
 
         return multiplicand
 
-    def _multiplicand(self) -> _exp.Expression:
+    def _multiplicand(self) -> _exp.ExpressionOrNumber:
         base = self._power_operand()
 
         if not self._accept(_tok.Tokens.POWER):
@@ -66,12 +56,12 @@ class Parser(_com.ParserBase[_exp.Expression]):
 
         return base**exponent
 
-    def _power_operand(self) -> _exp.Expression:
+    def _power_operand(self) -> _exp.ExpressionOrNumber:
         if integer := self._accept(_tok.Tokens.INTEGER):
-            return _exp.Literal(int(integer))
+            return int(integer)
 
         if number := self._accept(_tok.Tokens.FLOAT):
-            return _exp.Literal(float(number))
+            return float(number)
 
         if identifier := self._accept(_tok.Tokens.IDENTIFIER):
             if not self._accept(_tok.Tokens.LEFT_PAREN):
@@ -99,7 +89,7 @@ class Parser(_com.ParserBase[_exp.Expression]):
             "opening parenthesis but found {actual_token}"
         )
 
-    def _argument_list(self) -> _tp.Sequence[_exp.Expression]:
+    def _argument_list(self) -> _tp.Sequence[_exp.ExpressionOrNumber]:
         arguments = [self._expression()]
         while self._accept(_tok.Tokens.COMMA):
             argument = self._expression()
