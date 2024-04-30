@@ -86,14 +86,14 @@ class ParseErrorException(Exception):
 
 
 class _Ignore:
-    _IGNORE_REGEXES = "|".join(
+    _IGNORE_REGEX = "|".join(
         [
             r"[ \t\n]+",  # Whitespace
             r"(?m:!.*$)",  # Comment
         ]
     )
 
-    Pattern = _re.compile(_IGNORE_REGEXES, _re.RegexFlag.MULTILINE)
+    Pattern = _re.compile(_IGNORE_REGEX, _re.RegexFlag.MULTILINE)
 
 
 class Lexer:
@@ -108,10 +108,6 @@ class Lexer:
             Tokens.END,
         ]
         self.current_pos = 0
-
-    @property
-    def remaining_input(self) -> str:
-        return self.input_string[self.current_pos :]
 
     def get_next_token(self) -> LexerResult:
         while match := self._match(_Ignore.Pattern):
