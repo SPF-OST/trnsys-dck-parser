@@ -109,6 +109,6 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
 @_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
 def test_expression(test_case: _ExpressionTestCase) -> None:
-    actual_expression = _pexpr.parse(test_case.string)
+    actual_expression = _pexpr.parse_expression(test_case.string)
 
     assert actual_expression == test_case.parser_result

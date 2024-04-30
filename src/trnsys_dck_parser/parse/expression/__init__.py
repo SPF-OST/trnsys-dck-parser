@@ -3,9 +3,10 @@ from . import parse as _parse
 
 import trnsys_dck_parser.model.expression as _mexpr
 
-ParserResult = _com.ParserResult[_mexpr.Expression]
+ParserSuccess = _com.ParseSuccess[_mexpr.Expression]
+ParserResult = _com.ParseResult[_mexpr.Expression]
 
 
-def parse(expression: str) -> ParserResult:
+def parse_expression(expression: str) -> ParserResult:
     parser = _parse.Parser(expression)
     return parser.parse()

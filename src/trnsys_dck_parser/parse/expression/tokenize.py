@@ -1,15 +1,15 @@
-import trnsys_dck_parser.common as _pcom
+import trnsys_dck_parser.parse.tokens as _ptok
 
 from .. import common as _com
 
 
 class Tokens:
-    INTEGER = _com.TokenDefinition("integer", r"-?[0-9]+", priority=1)
-    FLOAT = _com.TokenDefinition("floating point number", r"-?[0-9]*\.[0-9]+([eE]-?[0-9]+)?", priority=2)
+    POSITIVE_INTEGER = _com.TokenDefinition("positive integer", _ptok.Regexes.POSITIVE_INTEGER, priority=1)
+    NEGATIVE_INTEGER = _com.TokenDefinition("integer", r"-[0-9]+", priority=2)
+    FLOAT = _com.TokenDefinition("floating point number", r"-?[0-9]*\.[0-9]+([eE]-?[0-9]+)?", priority=3)
     LEFT_SQUARE_BRACKET = _com.TokenDefinition('opening square bracket ("[")', r"\[")
     RIGHT_SQUARE_BRACKET = _com.TokenDefinition('closing square bracket ("]")', r"\]")
     COMMA = _com.TokenDefinition('comma (",")', r",")
-    IDENTIFIER = _com.TokenDefinition("variable", _pcom.IDENTIFIER_PATTERN.pattern)
     PLUS = _com.TokenDefinition('plus ("+")', r"\+")
     MINUS = _com.TokenDefinition('minus ("-")', r"-")
     TIMES = _com.TokenDefinition('times ("*")', r"\*", priority=1)
@@ -21,12 +21,13 @@ class Tokens:
 
 def create_lexer(input_string: str) -> _com.Lexer:
     token_definitions = [
-        Tokens.INTEGER,
+        Tokens.POSITIVE_INTEGER,
+        Tokens.NEGATIVE_INTEGER,
         Tokens.FLOAT,
         Tokens.LEFT_SQUARE_BRACKET,
         Tokens.RIGHT_SQUARE_BRACKET,
         Tokens.COMMA,
-        Tokens.IDENTIFIER,
+        _ptok.Tokens.IDENTIFIER,
         Tokens.PLUS,
         Tokens.MINUS,
         Tokens.TIMES,

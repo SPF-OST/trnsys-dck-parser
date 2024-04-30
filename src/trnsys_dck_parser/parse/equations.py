@@ -1,117 +1,60 @@
 import typing as _tp
+import re as _re
 
-import trnsys_dck_parser.model.expression as _exp
+import trnsys_dck_parser.model.equations as _meqs
+import trnsys_dck_parser.model.expression as _mexp
+import trnsys_dck_parser.parse.common as _pcom
+import trnsys_dck_parser.parse.tokens as _ptok
+import trnsys_dck_parser.parse.expression.parse as _pexp
 
-from .. import common as _com
 
-class Tokenizer(_com)
+class Tokens:
+    EQUATIONS = _pcom.TokenDefinition("EQUATIONS", r"EQUATIONS", _re.RegexFlag.IGNORECASE)
+    POSITIVE_INTEGER = _pcom.TokenDefinition("positive integer", _ptok.Regexes.POSITIVE_INTEGER)
+    EQUALS = _pcom.TokenDefinition("=", r"=")
 
-class Parser(_com.ParserBase[_exp.Expression]):
+
+class Parser(_pcom.ParserBase[_meqs.Equations]):
     def __init__(self, input_string: str) -> None:
-        lexer = _tok.create_lexer(input_string)
+        lexer = _pcom.Lexer(
+            input_string, [Tokens.EQUATIONS, Tokens.POSITIVE_INTEGER, Tokens.EQUALS, _ptok.Tokens.IDENTIFIER]
+        )
         super().__int__(lexer)
 
-    def parse(self) -> _com.ParserResult[_exp.Expression]:
-        self._set_next_token()
+    def parse(self) -> _pcom.ParseResult[_meqs.Equations]:
         try:
-            return self._expression()
-        except _com.ParsingErrorException as exception:
-            return exception.parsing_error
+            equations = self._equations()
+            return _pcom.ParseSuccess(equations, self._remaining_input_string_start_index)
+        except _pcom.ParseErrorException as exception:
+            return exception.parse_error
 
-    def _expression(self) -> _exp.ExpressionOrNumber:
-        addend = self._addend()
+    def _equations(self) -> _meqs.Equations:
+        self._expect(Tokens.EQUATIONS)
+
+        n_equations_value = self._expect(Tokens.POSITIVE_INTEGER)
+        n_equations = None if n_equations_value is None else int(n_equations_value)
+
+        equations = [self._equation()]
         while True:
-            if self._accept(_tok.Tokens.PLUS):
-                next_addend = self._addend()
-                addend += next_addend
-            elif self._accept(_tok.Tokens.MINUS):
-                next_addend = self._addend()
-                addend -= next_addend
-            else:
+            try:
+                equations.append(self._equation())
+            except _pcom.ParseErrorException:
                 break
 
-        return addend
+        return _meqs.Equations(n_equations, equations)
 
-    def _addend(self) -> _exp.ExpressionOrNumber:
-        multiplicand = self._multiplicand()
-        while True:
-            if self._accept(_tok.Tokens.TIMES):
-                next_multiplicand = self._multiplicand()
-                multiplicand *= next_multiplicand
-            elif self._accept(_tok.Tokens.DIVIDE):
-                next_multiplicand = self._multiplicand()
-                multiplicand /= next_multiplicand
-            else:
-                break
+    def _equation(self) -> _meqs.Equation:
+        variable_name = self._expect(_ptok.Tokens.IDENTIFIER)
+        self._expect(Tokens.EQUALS)
+        expression = self._expression()
+        equation = _meqs.Equation(variable_name, expression)
+        return equation
 
-        return multiplicand
+    def _expression(self) -> _mexp.Expression:
+        parser = _pexp.Parser(self._remaining_input_string)
+        return self._expect_sub_parser(parser)
 
-    def _multiplicand(self) -> _exp.ExpressionOrNumber:
-        base = self._power_operand()
 
-        if not self._accept(_tok.Tokens.POWER):
-            return base
-
-        exponent = self._power_operand()
-
-        return base**exponent
-
-    def _power_operand(self) -> _exp.ExpressionOrNumber:
-        if integer := self._accept(_tok.Tokens.INTEGER):
-            return int(integer)
-
-        if number := self._accept(_tok.Tokens.FLOAT):
-            return float(number)
-
-        if identifier := self._accept(_tok.Tokens.IDENTIFIER):
-            if not self._accept(_tok.Tokens.LEFT_PAREN):
-                return _exp.Variable(identifier)
-
-            arguments = self._argument_list()
-            self._expect(_tok.Tokens.RIGHT_PAREN)
-            return _exp.FunctionCall(identifier, *arguments)
-
-        if self._accept(_tok.Tokens.LEFT_SQUARE_BRACKET):
-            unit_number, output_number = self._unit_and_output_number()
-            self._expect(_tok.Tokens.RIGHT_SQUARE_BRACKET)
-            return _exp.UnitOutput(unit_number, output_number)
-
-        if self._accept(_tok.Tokens.MINUS):
-            return -self._expression()
-
-        if self._accept(_tok.Tokens.LEFT_PAREN):
-            expression = self._expression()
-            self._expect(_tok.Tokens.RIGHT_PAREN)
-            return expression
-
-        self._raise_parsing_error(
-            "Expected number, variable, function call, opening square bracket or "
-            "opening parenthesis but found {actual_token}"
-        )
-
-    def _argument_list(self) -> _tp.Sequence[_exp.ExpressionOrNumber]:
-        arguments = [self._expression()]
-        while self._accept(_tok.Tokens.COMMA):
-            argument = self._expression()
-            arguments.append(argument)
-
-        return arguments
-
-    def _unit_and_output_number(self) -> _tp.Tuple[int, int]:
-        self._expect(_tok.Tokens.INTEGER)
-        unit_number = int(self._current_token.value)
-        self._check_non_negative(unit_number)
-
-        self._expect(_tok.Tokens.COMMA)
-
-        self._expect(_tok.Tokens.INTEGER)
-        output_number = int(self._current_token.value)
-        self._check_non_negative(unit_number)
-
-        return unit_number, output_number
-
-    def _check_non_negative(self, integer):
-        if integer >= 0:
-            return
-
-        self._raise_parsing_error("Unit numbers must be non-negative.")
+def parse_equations(input_string: str) -> _pcom.ParseResult[_meqs.Equations]:
+    parser = Parser(input_string)
+    return parser.parse()

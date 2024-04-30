@@ -2,8 +2,6 @@ __all__ = [
     "Variable",
     "FunctionCall",
     "cos",
-    "create_variable",
-    "create_variables",
 ]
 
 import abc as _abc
@@ -116,7 +114,7 @@ class FunctionBase(_abc.ABC):
     name: str
 
     def _call(self, *arguments: Expression) -> Expression:
-        return FunctionCall(self.name, *arguments)
+        return FunctionCall(self.name, list(arguments))
 
 
 class UnaryFunction(FunctionBase, _abc.ABC):
