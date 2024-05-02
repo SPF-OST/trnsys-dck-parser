@@ -12,27 +12,66 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9]
+        python-version: [3.12]
 
     steps:
-    - uses: actions/checkout@v2
+    
+    - uses: actions/checkout@v4
+    
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install wheel
-        pip install -r dev-requirements.txt
+        pip install -r requirements/dev.txt
+    
     - name: Static type checking with mypy
       run: mypy --show-error-codes src test
+    
     - name: Lint with pylint
-      run: pylint test/test_trnsys_dck_parser src/trnsys_dck_parser setup.py
+      run: pylint test/test_trnsys_dck_parser src/trnsys_dck_parser
+      
+    - name: Get current time
+      id: current_time
+      run: echo "current_time=$(date -Iseconds)" >> "$GITHUB_OUTPUT"
+      
+    - name: Restore and save (at end of workflow) pytest-benchmark data
+      id: pytest-benchmark
+      uses: actions/cache@v4
+      with:
+        path: .benchmarks
+        key: pytest-benchmark-${{steps.current_time.outputs.current_time}}
+        restore-keys:
+          pytest-benchmark-
+    
     - name: Test with pytest
-      run: pytest test --cov=src --cov-report=html:test-results/coverage --cov-report=term --html=test-results/report/report.html
+      shell: bash {0}
+      run: |
+        compare_args=$(test -d .benchmarks && echo \
+          --benchmark-compare \
+          --benchmark-compare-fail=mean:5% \
+          --benchmark-histogram='test-results/benchmark/histogram')
+        pytest test \
+          --cov=src \
+          --cov-report=html:test-results/coverage \
+          --cov-report=term \
+          --cov-report=lcov:test-results/coverage.lcov \
+          --html=test-results/report/report.html \
+          --benchmark-autosave \
+          $compare_args
+
+    - name: Post coverage report to Coveralls
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: test-results/coverage.lcov
+        
     - name: Upload test results and coverage reports
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-and-coverage-report
         path: test-results
