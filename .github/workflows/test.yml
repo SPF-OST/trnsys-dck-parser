@@ -27,17 +27,38 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install wheel
-        pip install -r dev-requirements.txt
+        pip install -r requirements\dev.txt
     
     - name: Static type checking with mypy
       run: mypy --show-error-codes src test
     
     - name: Lint with pylint
       run: pylint test/test_trnsys_dck_parser src/trnsys_dck_parser setup.py
+      
+    - name: Get current time
+      id: current_time
+      run: echo "current_time=$(date -Iseconds)" >> "$GITHUB_OUTPUT"
+      
+    - name: Restore and save (at end of workflow) pytest-benchmark data
+      id: pytest-benchmark
+      uses: actions/cache@v4
+      with:
+        path: .benchmark
+        key: pytest-benchmark-${{steps.current_time.outputs.current_time}}
+        restore-keys:
+          pytest-benchmark-
     
     - name: Test with pytest
       run: |
-        pytest test --cov=src --cov-report=html:test-results/coverage --cov-report=term --cov-report=lcov:test-results/coverage.lcov --html=test-results/report/report.html
+        pytest test \
+          --cov=src \
+          --cov-report=html:test-results/coverage \
+          --cov-report=term \
+          --cov-report=lcov:test-results/coverage.lcov \
+          --html=test-results/report/report.html \
+          --benchmark-autosave \
+          --benchmark-compare \
+          --benchmark-compare-fail=mean:5%
 
     - name: Post coverage report to Coveralls
       uses: coverallsapp/github-action@master

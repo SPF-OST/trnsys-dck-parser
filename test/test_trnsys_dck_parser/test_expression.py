@@ -2,6 +2,7 @@ import dataclasses as _dc
 import typing as _tp
 
 import pytest as _pt
+import pytest_benchmark.fixture as _pbf
 
 import trnsys_dck_parser.build as _build
 import trnsys_dck_parser.model.expression as _mexpr
@@ -15,6 +16,7 @@ _l = _build.create_literal
 class _ExpressionTestCase:
     string: str
     parser_result: _pexpr.ParseResult
+    benchmark: bool = True
 
 
 def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
@@ -22,11 +24,11 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
     string = "0.2"
     result = _pcom.ParseSuccess(_mexpr.Literal(0.2), 3)
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "7"
     result = _pcom.ParseSuccess(_mexpr.Literal(7), 1)
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "(1+COS(C_tilt))*0.5*tSky + (1-COS(C_tilt))*0.5*tAmb"
     t_sky, c_tilt, t_amb = _build.create_variables("tSky C_tilt tAmb")
@@ -54,17 +56,17 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
         _build.create_variable("numModPv2"),
         9,
     )
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "numModPv2/-uvw"
     num_mod_pv2, uvw = _build.create_variables("numModPv2 uvw")
     result = _pcom.ParseSuccess(num_mod_pv2 / -uvw, 14)
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "x*y**z"
     x, y, z = _build.create_variables("x y z")
     result = _pcom.ParseSuccess(x * (y ** z), 6)
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = ""
     result = _pcom.ParseError(
@@ -74,7 +76,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
         input_string=string,
         error_start=0,
     )
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "((tSky+)"
     result = _pcom.ParseError(
@@ -82,17 +84,17 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
                       "square bracket or opening parenthesis but found "
                       'closing parenthesis (")")',
         input_string=string,
-        error_start=len(string) - 1,
+        error_start=7,
     )
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "(10**-8"
     result = _pcom.ParseError(
         error_message='Expected closing parenthesis (")") but found end of input.',
         input_string=string,
-        error_start=len(string),
+        error_start=7,
     )
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "(10**-)"
     result = _pcom.ParseError(
@@ -100,17 +102,20 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
                       "square bracket or opening parenthesis but found "
                       'closing parenthesis (")")',
         input_string=string,
-        error_start=len(string) - 1,
+        error_start=6,
     )
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "foobar 10"
     result = _pcom.ParseSuccess(_build.create_variable("foobar"), 6)
-    yield _ExpressionTestCase(string, result)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
 
 @_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
-def test_expression(test_case: _ExpressionTestCase) -> None:
-    actual_expression = _build.parse_expression(test_case.string)
+def test_expression(test_case: _ExpressionTestCase, benchmark: _pbf.BenchmarkFixture) -> None:
+    if test_case.benchmark:
+        actual_expression = benchmark(_build.parse_expression, test_case.string)
+    else:
+        actual_expression = _build.parse_expression(test_case.string)
 
     assert actual_expression == test_case.parser_result

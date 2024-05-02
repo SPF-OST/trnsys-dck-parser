@@ -1,10 +1,12 @@
-import trnsys_dck_parser.parse.equations as _peqs
+import pytest_benchmark.fixture as _pbf
+
 import trnsys_dck_parser.build as _build
 import trnsys_dck_parser.model.equations as _meqs
 import trnsys_dck_parser.parse.common as _pcom
+import trnsys_dck_parser.parse.equations as _peqs
 
 
-def test_equations_without_placeholders() -> None:
+def test_equations_without_placeholders(benchmark: _pbf.BenchmarkFixture) -> None:
     equations_string = """\
 EQUATIONS 9		! 16     
 dpAuxSH_bar = 0.2															! according to MacSheep report 7.2 
@@ -17,7 +19,7 @@ etaPuAuxBrine = 0.35														! Assumption
 PelPuAuxBrine_kW = (PflowAuxBrine_W/1000)/etaPuAuxBrine						! required pump electric power, kW
 PelPuAuxBri_kW = GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW							! GT(MfrcondIn,0.1)*PelPuAuxBrine_kW		! naming could be better
 """
-    equations_result = _peqs.parse_equations(equations_string)
+    equations_result = benchmark(_peqs.parse_equations, equations_string)
 
     assert _pcom.is_success(equations_result)
 

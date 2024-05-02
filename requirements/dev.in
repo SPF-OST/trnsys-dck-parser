@@ -1,10 +1,12 @@
 pytest
 pytest-cov
 pytest-html
+pytest-benchmark
 mypy
 pylint
 black
 
 pip-tools
+pip-compile-multi
 
 -e file:.#egg=trnsys_dck_parser
