@@ -82,10 +82,17 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: test-results/coverage.lcov
         
+    - name: Compute artifact file name
+      id: fn
+      run: |
+        sha=$(git rev-parse --short HEAD)
+        ref_name=$(echo "${{github.ref_name}}" | sed 's|/|-|g')
+        echo "artifact_file_name=trnsys-dck-parser-artifacts-$sha-$ref_name" >> $env:GITHUB_OUTPUT
+        
     - name: Upload test results and coverage reports
       uses: actions/upload-artifact@v4
       with:
-        name: test-results-and-coverage-report
+        name: ${{steps.fn.outputs.artifact_file_name}}
         path: test-results
       # Use always() to always run this step to publish test results when there are test failures
       if: ${{ always() }}
