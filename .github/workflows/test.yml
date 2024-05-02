@@ -27,7 +27,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install wheel
-        pip install -r requirements\dev.txt
+        pip install -r requirements/dev.txt
     
     - name: Static type checking with mypy
       run: mypy --show-error-codes src test
