@@ -51,7 +51,10 @@ jobs:
     - name: Test with pytest
       shell: bash {0}
       run: |
-        compare_args=$(test -d .benchmarks && echo --benchmark-compare --benchmark-compare-fail=mean:5%)
+        compare_args=$(test -d .benchmarks && echo \
+          --benchmark-compare \
+          --benchmark-compare-fail=mean:5% \
+          --benchmark-histogram='test_results/benchmark_<date>_<time>')
         pytest test \
           --cov=src \
           --cov-report=html:test-results/coverage \
