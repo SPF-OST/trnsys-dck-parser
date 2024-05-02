@@ -2,7 +2,6 @@ import dataclasses as _dc
 import typing as _tp
 
 import pytest as _pt
-import pytest_benchmark.fixture as _pbf
 
 import trnsys_dck_parser.build as _build
 import trnsys_dck_parser.model.expression as _mexpr
@@ -112,7 +111,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
 
 @_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
-def test_expression(test_case: _ExpressionTestCase, benchmark: _pbf.BenchmarkFixture) -> None:
+def test_expression(test_case: _ExpressionTestCase, benchmark) -> None:
     if test_case.benchmark:
         actual_expression = benchmark(_build.parse_expression, test_case.string)
     else:

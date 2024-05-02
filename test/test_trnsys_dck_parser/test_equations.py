@@ -1,12 +1,10 @@
-import pytest_benchmark.fixture as _pbf
-
 import trnsys_dck_parser.build as _build
 import trnsys_dck_parser.model.equations as _meqs
 import trnsys_dck_parser.parse.common as _pcom
 import trnsys_dck_parser.parse.equations as _peqs
 
 
-def test_equations_without_placeholders(benchmark: _pbf.BenchmarkFixture) -> None:
+def test_equations_without_placeholders(benchmark) -> None:
     equations_string = """\
 EQUATIONS 9		! 16     
 dpAuxSH_bar = 0.2															! according to MacSheep report 7.2 
