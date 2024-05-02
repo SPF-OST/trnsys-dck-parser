@@ -51,18 +51,21 @@ jobs:
     - name: Test with pytest
       shell: bash {0}
       run: |
+        pytest test \
+          --cov=src/trnsys_dck_parser \
+          --cov-report=html:test-results/coverage \
+          --cov-report=term \
+          --cov-report=lcov:test-results/coverage.lcov \
+          --html=test-results/report/report.html
+        
+    - name: Benchmark with pytest-benchmark
+      shell: bash {0}
+      run: |
         compare_args=$(test -d .benchmarks && echo \
           --benchmark-compare \
           --benchmark-compare-fail=mean:5% \
           --benchmark-histogram='test-results/benchmark/histogram')
-        pytest test \
-          --cov=trnsys_dck_parser \
-          --cov-report=html:test-results/coverage \
-          --cov-report=term \
-          --cov-report=lcov:test-results/coverage.lcov \
-          --html=test-results/report/report.html \
-          --benchmark-autosave \
-          $compare_args
+        pytest test --benchmark-autosave $compare_args      
 
     - name: Post coverage report to Coveralls
       uses: coverallsapp/github-action@v2
