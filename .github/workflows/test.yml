@@ -16,10 +16,10 @@ jobs:
 
     steps:
     
-    - uses: actions/checkout@latest
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@latest
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -41,7 +41,7 @@ jobs:
       
     - name: Restore and save (at end of workflow) pytest-benchmark data
       id: pytest-benchmark
-      uses: actions/cache@latest
+      uses: actions/cache@v4
       with:
         path: .benchmark
         key: pytest-benchmark-${{steps.current_time.outputs.current_time}}
@@ -62,13 +62,13 @@ jobs:
           $compare_args
 
     - name: Post coverage report to Coveralls
-      uses: coverallsapp/github-action@latest
+      uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: test-results/coverage.lcov
         
     - name: Upload test results and coverage reports
-      uses: actions/upload-artifact@latest
+      uses: actions/upload-artifact@v4
       with:
         name: test-results-and-coverage-report
         path: test-results
