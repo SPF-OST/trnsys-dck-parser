@@ -54,7 +54,7 @@ jobs:
         compare_args=$(test -d .benchmarks && echo \
           --benchmark-compare \
           --benchmark-compare-fail=mean:5% \
-          --benchmark-histogram='test-results/benchmark_<date>_<time>')
+          --benchmark-histogram='test-results/benchmark/histogram')
         pytest test \
           --cov=src \
           --cov-report=html:test-results/coverage \
