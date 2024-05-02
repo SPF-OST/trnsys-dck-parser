@@ -9,4 +9,4 @@ black
 pip-tools
 pip-compile-multi
 
--e file:.#egg=trnsys_dck_parser
+-e file:.

@@ -52,11 +52,12 @@ jobs:
       shell: bash {0}
       run: |
         pytest test \
-          --cov=src/trnsys_dck_parser \
+          --cov=trnsys_dck_parser \
           --cov-report=html:test-results/coverage \
           --cov-report=term \
           --cov-report=lcov:test-results/coverage.lcov \
-          --html=test-results/report/report.html
+          --html=test-results/report/report.html \
+          --benchmark-disable
         
     - name: Benchmark with pytest-benchmark
       shell: bash {0}
