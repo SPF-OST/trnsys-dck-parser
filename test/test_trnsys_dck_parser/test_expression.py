@@ -31,7 +31,31 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
     string = "ABS([33,1])"
     result = _pcom.ParseSuccess(
-        _build.absolute(_mexpr.UnitOutput(33, 1))
+        _build.absolute(_mexpr.UnitOutput(33, 1)), 11
+    )
+    yield _ExpressionTestCase(string, result, benchmark=False)
+
+    string = "[-6,1] "
+    result = _pcom.ParseError(
+        error_message="Expected positive integer but found integer.",
+        input_string=string,
+        error_start=1,
+    )
+    yield _ExpressionTestCase(string, result, benchmark=False)
+
+    string = "\t[6, -1] "
+    result = _pcom.ParseError(
+        error_message="Expected positive integer but found integer.",
+        input_string=string,
+        error_start=5,
+    )
+    yield _ExpressionTestCase(string, result, benchmark=False)
+
+    string = "[-6,\t-1] "
+    result = _pcom.ParseError(
+        error_message="Expected positive integer but found integer.",
+        input_string=string,
+        error_start=1,
     )
     yield _ExpressionTestCase(string, result, benchmark=False)
 

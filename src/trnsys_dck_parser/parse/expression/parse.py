@@ -117,7 +117,6 @@ class Parser(_pcom.ParserBase[_exp.Expression]):
 
         self._expect(_petok.Tokens.COMMA)
 
-        self._expect(_petok.Tokens.POSITIVE_INTEGER)
         output_number = int(self._expect(_petok.Tokens.POSITIVE_INTEGER))
         self._check_non_negative(output_number, "Output number")
 
