@@ -33,7 +33,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     result = _pcom.ParseSuccess(
         _build.absolute(_mexpr.UnitOutput(33, 1))
     )
-    yield = _ExpressionTestCase(string, result, benchmark=False)
+    yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "(1+COS(C_tilt))*0.5*tSky + (1-COS(C_tilt))*0.5*tAmb"
     t_sky, c_tilt, t_amb = _build.create_variables("tSky C_tilt tAmb")
