@@ -43,7 +43,7 @@ jobs:
       id: pytest-benchmark
       uses: actions/cache@v4
       with:
-        path: .benchmark
+        path: .benchmarks
         key: pytest-benchmark-${{steps.current_time.outputs.current_time}}
         restore-keys:
           pytest-benchmark-
@@ -51,7 +51,7 @@ jobs:
     - name: Test with pytest
       shell: bash {0}
       run: |
-        compare_args=$(test -d .benchmark && echo --benchmark-compare --benchmark-compare-fail=mean:5%)
+        compare_args=$(test -d .benchmarks && echo --benchmark-compare --benchmark-compare-fail=mean:5%)
         pytest test \
           --cov=src \
           --cov-report=html:test-results/coverage \
