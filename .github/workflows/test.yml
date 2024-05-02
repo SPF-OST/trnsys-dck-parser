@@ -56,7 +56,7 @@ jobs:
           --benchmark-compare-fail=mean:5% \
           --benchmark-histogram='test-results/benchmark/histogram')
         pytest test \
-          --cov=src \
+          --cov=trnsys_dck_parser \
           --cov-report=html:test-results/coverage \
           --cov-report=term \
           --cov-report=lcov:test-results/coverage.lcov \
