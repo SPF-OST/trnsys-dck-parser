@@ -41,6 +41,7 @@ class UnaryFunction(FunctionBase, _abc.ABC):
 
 sin = UnaryFunction("SIN")
 cos = UnaryFunction("COS")
+absolute = UnaryFunction("ABS")
 
 
 def parse_expression(expression: str) -> _pexpp.ParseResult:
