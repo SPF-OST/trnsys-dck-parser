@@ -18,7 +18,7 @@ class _ExpressionTestCase:
     benchmark: bool = True
 
 
-def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
+def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint: disable=too-many-statements
     result: _pcom.ParseResult[_mexpr.Expression]
 
     string = "0.2"
