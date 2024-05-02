@@ -15,7 +15,7 @@ class ParseError:
         return self.input_string[self.error_start:]
 
     def __repr__(self) -> str:
-        return f"Parse error: {self.error_message}: {self.error_string[:10]}"
+        return f"Parse error: {self.error_message}: {self.error_string[:10]}"  # pragma: no cover
 
 
 _T_co = _tp.TypeVar("_T_co", covariant=True)
@@ -189,7 +189,7 @@ class ParserBase(_tp.Generic[_T_co], _abc.ABC):
                 self._advance_input(remaining_string_input_start_index)
 
                 return result.value
-            case _ as unreachable:
+            case _ as unreachable:  # pragma: no cover
                 _tp.assert_never(unreachable)
 
     def _set_next_token(self) -> None:
@@ -217,4 +217,4 @@ class ParserBase(_tp.Generic[_T_co], _abc.ABC):
 
     @_abc.abstractmethod
     def parse(self) -> ParseResult:
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
