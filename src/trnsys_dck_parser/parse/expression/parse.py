@@ -2,10 +2,9 @@ import dataclasses as _dc
 import typing as _tp
 
 import trnsys_dck_parser.model.expression as _exp
-import trnsys_dck_parser.parse.tokens as _ptok
+import trnsys_dck_parser.parse.common as _pcom
 import trnsys_dck_parser.parse.expression.tokenize as _petok
-
-from .. import common as _com
+import trnsys_dck_parser.parse.tokens as _ptok
 
 
 @_dc.dataclass
@@ -14,17 +13,20 @@ class ExpressionWithRemainingStartIndex:
     remaining_input_string_start_index: int
 
 
-class Parser(_com.ParserBase[_exp.Expression]):
+ParseResult = _pcom.ParseResult[_exp.Expression]
+
+
+class Parser(_pcom.ParserBase[_exp.Expression]):
     def __init__(self, input_string: str) -> None:
         lexer = _petok.create_lexer(input_string)
         super().__int__(lexer)
 
-    def parse(self) -> _com.ParseResult:
+    def parse(self) -> ParseResult:
         try:
             expression = self._expression()
-            parse_success = _com.ParseSuccess(expression, self._remaining_input_string_start_index)
+            parse_success = _pcom.ParseSuccess(expression, self._remaining_input_string_start_index)
             return parse_success
-        except _com.ParseErrorException as exception:
+        except _pcom.ParseErrorException as exception:
             return exception.parse_error
 
     def _expression(self) -> _exp.Expression:
@@ -63,7 +65,7 @@ class Parser(_com.ParserBase[_exp.Expression]):
 
         exponent = self._power_operand()
 
-        return base**exponent
+        return base ** exponent
 
     def _power_operand(self) -> _exp.Expression:
         if positive_integer := self._accept(_petok.Tokens.POSITIVE_INTEGER):

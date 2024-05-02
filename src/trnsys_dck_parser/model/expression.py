@@ -1,9 +1,3 @@
-__all__ = [
-    "Variable",
-    "FunctionCall",
-    "cos",
-]
-
 import abc as _abc
 import dataclasses as _dc
 import typing as _tp
@@ -107,20 +101,3 @@ class UnitOutput(Expression):
 class FunctionCall(Expression):
     function: str
     arguments: _tp.Sequence[Expression]
-
-
-@_dc.dataclass(eq=True)
-class FunctionBase(_abc.ABC):
-    name: str
-
-    def _call(self, *arguments: Expression) -> Expression:
-        return FunctionCall(self.name, list(arguments))
-
-
-class UnaryFunction(FunctionBase, _abc.ABC):
-    def __call__(self, x: Expression):
-        return self._call(x)
-
-
-sin = UnaryFunction("SIN")
-cos = UnaryFunction("COS")

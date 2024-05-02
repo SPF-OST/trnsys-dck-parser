@@ -3,10 +3,11 @@ import typing as _tp
 
 import pytest as _pt
 
-import trnsys_dck_parser.parse.expression as _pexpr
-import trnsys_dck_parser.parse.common as _pcom
-import trnsys_dck_parser.model.expression as _mexpr
+import trnsys_dck_parser.build
 import trnsys_dck_parser.build as _build
+import trnsys_dck_parser.model.expression as _mexpr
+import trnsys_dck_parser.parse.common as _pcom
+import trnsys_dck_parser.parse.expression.parse as _pexpr
 
 _l = _build.create_literal
 
@@ -14,7 +15,7 @@ _l = _build.create_literal
 @_dc.dataclass
 class _ExpressionTestCase:
     string: str
-    parser_result: _pexpr.ParserResult
+    parser_result: _pexpr.ParseResult
 
 
 def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
@@ -29,7 +30,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     string = "(1+COS(C_tilt))*0.5*tSky + (1-COS(C_tilt))*0.5*tAmb"
     t_sky, c_tilt, t_amb = _build.create_variables("tSky C_tilt tAmb")
     result = _pcom.ParseSuccess(
-        (_l(1) + _mexpr.cos(c_tilt)) * _l(0.5) * t_sky + (_l(1) - _mexpr.cos(c_tilt)) * _l(0.5) * t_amb,
+        (_l(1) + _build.cos(c_tilt)) * _l(0.5) * t_sky + (_l(1) - _build.cos(c_tilt)) * _l(0.5) * t_amb,
         51,
     )
     yield _ExpressionTestCase(string, result)
@@ -61,14 +62,14 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
     string = "x*y**z"
     x, y, z = _build.create_variables("x y z")
-    result = _pcom.ParseSuccess(x * (y**z), 6)
+    result = _pcom.ParseSuccess(x * (y ** z), 6)
     yield _ExpressionTestCase(string, result)
 
     string = ""
     result = _pcom.ParseError(
         error_message="Expected number, variable, function call, opening "
-        "square bracket or opening parenthesis but found "
-        "end of input",
+                      "square bracket or opening parenthesis but found "
+                      "end of input",
         input_string=string,
         error_start=0,
     )
@@ -77,8 +78,8 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     string = "((tSky+)"
     result = _pcom.ParseError(
         error_message="Expected number, variable, function call, opening "
-        "square bracket or opening parenthesis but found "
-        'closing parenthesis (")")',
+                      "square bracket or opening parenthesis but found "
+                      'closing parenthesis (")")',
         input_string=string,
         error_start=len(string) - 1,
     )
@@ -95,8 +96,8 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
     string = "(10**-)"
     result = _pcom.ParseError(
         error_message="Expected number, variable, function call, opening "
-        "square bracket or opening parenthesis but found "
-        'closing parenthesis (")")',
+                      "square bracket or opening parenthesis but found "
+                      'closing parenthesis (")")',
         input_string=string,
         error_start=len(string) - 1,
     )
@@ -109,6 +110,6 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
 @_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
 def test_expression(test_case: _ExpressionTestCase) -> None:
-    actual_expression = _pexpr.parse_expression(test_case.string)
+    actual_expression = trnsys_dck_parser.build.parse_expression(test_case.string)
 
     assert actual_expression == test_case.parser_result
