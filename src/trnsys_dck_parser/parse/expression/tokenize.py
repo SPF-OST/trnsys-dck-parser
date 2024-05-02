@@ -18,7 +18,7 @@ class Tokens:
     RIGHT_PAREN = _pcom.TokenDefinition('closing parenthesis (")")', r"\)")
 
 
-def create_lexer(input_string: str) -> _pcom.Lexer:
+def create_lexer(input_string: str, start_pos: int) -> _pcom.Lexer:
     token_definitions = [
         Tokens.POSITIVE_INTEGER,
         Tokens.NEGATIVE_INTEGER,
@@ -36,4 +36,4 @@ def create_lexer(input_string: str) -> _pcom.Lexer:
         Tokens.RIGHT_PAREN,
     ]
 
-    return _pcom.Lexer(input_string, token_definitions)
+    return _pcom.Lexer(input_string, token_definitions, start_pos)

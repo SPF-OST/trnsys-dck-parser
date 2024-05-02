@@ -12,7 +12,7 @@ class ParseError:
 
     @property
     def error_string(self) -> str:
-        return self.input_string[self.error_start:]
+        return self.input_string[self.error_start :]
 
     def __repr__(self) -> str:
         return f"Parse error: {self.error_message}: {self.error_string[:10]}"  # pragma: no cover
@@ -101,7 +101,7 @@ class _Ignore:
 
 
 class Lexer:
-    def __init__(self, input_string: str, token_definitions: _tp.Sequence[TokenDefinition]) -> None:
+    def __init__(self, input_string: str, token_definitions: _tp.Sequence[TokenDefinition], start_pos: int) -> None:
         self.input_string = input_string
 
         def get_priority(token_definition: TokenDefinition) -> int:
@@ -111,7 +111,7 @@ class Lexer:
             *sorted(token_definitions, key=get_priority, reverse=True),
             Tokens.END,
         ]
-        self.current_pos = 0
+        self.current_pos = start_pos
 
     def get_next_token(self) -> LexerResult:
         while match := self._match(_Ignore.Pattern):
@@ -149,10 +149,6 @@ class ParserBase(_tp.Generic[_T_co], _abc.ABC):
         self._current_token: _tp.Optional[Token] = None
         self._remaining_input_string_start_index = 0
 
-    @property
-    def _remaining_input_string(self) -> str:
-        return self._lexer.input_string[self._remaining_input_string_start_index:]
-
     def _accept(self, token_definition: TokenDefinition) -> str | None:
         if not self._current_token:
             self._set_next_token()
@@ -183,10 +179,7 @@ class ParserBase(_tp.Generic[_T_co], _abc.ABC):
             case ParseError():
                 raise ParseErrorException(result)
             case ParseSuccess():
-                remaining_string_input_start_index = (
-                        self._remaining_input_string_start_index + result.remaining_string_input_start_index
-                )
-                self._advance_input(remaining_string_input_start_index)
+                self._advance_input(result.remaining_string_input_start_index)
 
                 return result.value
             case _ as unreachable:  # pragma: no cover

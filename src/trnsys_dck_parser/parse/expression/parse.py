@@ -17,8 +17,8 @@ ParseResult = _pcom.ParseResult[_exp.Expression]
 
 
 class Parser(_pcom.ParserBase[_exp.Expression]):
-    def __init__(self, input_string: str) -> None:
-        lexer = _petok.create_lexer(input_string)
+    def __init__(self, input_string: str, start_pos: int = 0) -> None:
+        lexer = _petok.create_lexer(input_string, start_pos)
         super().__init__(lexer)
 
     def parse(self) -> ParseResult:
