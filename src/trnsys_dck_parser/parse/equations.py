@@ -19,7 +19,7 @@ class Parser(_pcom.ParserBase[_meqs.Equations]):
         lexer = _pcom.Lexer(
             input_string, [Tokens.EQUATIONS, Tokens.POSITIVE_INTEGER, Tokens.EQUALS, _ptok.Tokens.IDENTIFIER]
         )
-        super().__int__(lexer)
+        super().__init__(lexer)
 
     def parse(self) -> _pcom.ParseResult[_meqs.Equations]:
         try:

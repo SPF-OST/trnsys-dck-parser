@@ -43,6 +43,3 @@ PelPuAuxBri_kW = GT(MfrEvapIn,0.1)*PelPuAuxBrine_kW							! GT(MfrcondIn,0.1)*Pe
     expected_equations = _meqs.Equations(expected_n_equations, all_expected_equations)
 
     assert actual_equations == expected_equations
-
-    # TODO: check whether comments were parsed correctly
-    # assert actual_equations.comments == [_deck.InlineComment("foo", line=5, column=0)]

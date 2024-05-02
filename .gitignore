@@ -1,6 +1,7 @@
 .idea/
-venv/
+venv*/
 
+build/
 src/trnsys_dck_parser.egg-info/
 **/__pycache__/
 

@@ -19,7 +19,7 @@ ParseResult = _pcom.ParseResult[_exp.Expression]
 class Parser(_pcom.ParserBase[_exp.Expression]):
     def __init__(self, input_string: str) -> None:
         lexer = _petok.create_lexer(input_string)
-        super().__int__(lexer)
+        super().__init__(lexer)
 
     def parse(self) -> ParseResult:
         try:
@@ -67,7 +67,7 @@ class Parser(_pcom.ParserBase[_exp.Expression]):
 
         return base ** exponent
 
-    def _power_operand(self) -> _exp.Expression:
+    def _power_operand(self) -> _exp.Expression:  # pylint: disable=too-many-return-statements
         if positive_integer := self._accept(_petok.Tokens.POSITIVE_INTEGER):
             return _exp.Literal(int(positive_integer))
 

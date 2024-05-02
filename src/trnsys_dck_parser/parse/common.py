@@ -12,39 +12,43 @@ class ParseError:
 
     @property
     def error_string(self) -> str:
-        return self.input_string[self.error_start :]
+        return self.input_string[self.error_start:]
 
     def __repr__(self) -> str:
         return f"Parse error: {self.error_message}: {self.error_string[:10]}"
 
 
-_TCo = _tp.TypeVar("_TCo", covariant=True)
-_SCo = _tp.TypeVar("_SCo", covariant=True)
+_T_co = _tp.TypeVar("_T_co", covariant=True)
+_S_co = _tp.TypeVar("_S_co", covariant=True)
 
 
 @_dc.dataclass
-class ParseSuccess(_tp.Generic[_TCo]):
-    value: _TCo
+class ParseSuccess(_tp.Generic[_T_co]):
+    value: _T_co
     remaining_string_input_start_index: int
 
 
-ParseResult = ParseSuccess[_TCo] | ParseError
+ParseResult = ParseSuccess[_T_co] | ParseError
 
 
-def is_success(result: ParseResult) -> bool:
+def is_success(result: ParseResult) -> _tp.TypeGuard[ParseSuccess]:
     return isinstance(result, ParseSuccess)
 
 
-def success(result: ParseResult[_TCo]) -> ParseSuccess[_TCo]:
-    if not is_success(result):
+def is_error(result: ParseResult) -> _tp.TypeGuard[ParseError]:
+    return not is_success(result)
+
+
+def success(result: ParseResult[_T_co]) -> ParseSuccess[_T_co]:
+    if is_error(result):
         raise ValueError(f"Not a success: {result.error_message}.")
 
-    return _tp.cast(ParseSuccess[_TCo], result)
+    return _tp.cast(ParseSuccess[_T_co], result)
 
 
-def error(result: ParseResult[_TCo]) -> ParseError:
+def error(result: ParseResult[_T_co]) -> ParseError:
     if is_success(result):
-        raise ValueError(f"Not a failure: {result.error_message}.")
+        raise ValueError(f"Not a failure: {result.value}.")
 
     return _tp.cast(ParseError, result)
 
@@ -128,7 +132,7 @@ class Lexer:
 
         return parsing_error
 
-    def _match(self, pattern: _re.Pattern) -> _re.Match:
+    def _match(self, pattern: _re.Pattern) -> _re.Match | None:
         match = pattern.match(self.input_string, pos=self.current_pos)
         return match
 
@@ -139,19 +143,21 @@ class Lexer:
         self.current_pos = to
 
 
-class ParserBase(_tp.Generic[_TCo], _abc.ABC):
-    def __int__(self, lexer: Lexer) -> None:
+class ParserBase(_tp.Generic[_T_co], _abc.ABC):
+    def __init__(self, lexer: Lexer) -> None:
         self._lexer = lexer
         self._current_token: _tp.Optional[Token] = None
         self._remaining_input_string_start_index = 0
 
     @property
     def _remaining_input_string(self) -> str:
-        return self._lexer.input_string[self._remaining_input_string_start_index :]
+        return self._lexer.input_string[self._remaining_input_string_start_index:]
 
     def _accept(self, token_definition: TokenDefinition) -> str | None:
         if not self._current_token:
             self._set_next_token()
+
+        assert self._current_token
 
         if self._current_token.definition != token_definition:
             return None
@@ -172,17 +178,19 @@ class ParserBase(_tp.Generic[_TCo], _abc.ABC):
 
         self._raise_parsing_error(f"Expected {expected_token} but found {{actual_token}}.")
 
-    def _expect_sub_parser(self, parser: "ParserBase[_SCo]") -> _SCo:
-        result = parser.parse()
-        if not is_success(result):
-            raise ParseErrorException(result)
+    def _expect_sub_parser(self, parser: "ParserBase[_S_co]") -> _S_co:
+        match result := parser.parse():
+            case ParseError():
+                raise ParseErrorException(result)
+            case ParseSuccess():
+                remaining_string_input_start_index = (
+                        self._remaining_input_string_start_index + result.remaining_string_input_start_index
+                )
+                self._advance_input(remaining_string_input_start_index)
 
-        remaining_string_input_start_index = (
-            self._remaining_input_string_start_index + result.remaining_string_input_start_index
-        )
-        self._advance_input(remaining_string_input_start_index)
-
-        return result.value
+                return result.value
+            case _ as unreachable:
+                _tp.assert_never(unreachable)
 
     def _set_next_token(self) -> None:
         next_token = self._lexer.get_next_token()

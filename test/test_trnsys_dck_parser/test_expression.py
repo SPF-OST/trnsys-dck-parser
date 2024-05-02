@@ -3,7 +3,6 @@ import typing as _tp
 
 import pytest as _pt
 
-import trnsys_dck_parser.build
 import trnsys_dck_parser.build as _build
 import trnsys_dck_parser.model.expression as _mexpr
 import trnsys_dck_parser.parse.common as _pcom
@@ -19,6 +18,8 @@ class _ExpressionTestCase:
 
 
 def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
+    result: _pcom.ParseResult[_mexpr.Expression]
+
     string = "0.2"
     result = _pcom.ParseSuccess(_mexpr.Literal(0.2), 3)
     yield _ExpressionTestCase(string, result)
@@ -110,6 +111,6 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:
 
 @_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
 def test_expression(test_case: _ExpressionTestCase) -> None:
-    actual_expression = trnsys_dck_parser.build.parse_expression(test_case.string)
+    actual_expression = _build.parse_expression(test_case.string)
 
     assert actual_expression == test_case.parser_result
