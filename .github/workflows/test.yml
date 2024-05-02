@@ -12,25 +12,39 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9]
+        python-version: [3.12]
 
     steps:
+    
     - uses: actions/checkout@v2
+    
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install wheel
         pip install -r dev-requirements.txt
+    
     - name: Static type checking with mypy
       run: mypy --show-error-codes src test
+    
     - name: Lint with pylint
       run: pylint test/test_trnsys_dck_parser src/trnsys_dck_parser setup.py
+    
     - name: Test with pytest
-      run: pytest test --cov=src --cov-report=html:test-results/coverage --cov-report=term --html=test-results/report/report.html
+      run: |
+        pytest test --cov=src --cov-report=html:test-results/coverage --cov-report=term --cov-report=lcov:test-results/coverage.lcov --html=test-results/report/report.html
+
+    - name: Post coverage report to Coveralls
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: test-results/coverage.lcov
+        
     - name: Upload test results and coverage reports
       uses: actions/upload-artifact@v2
       with:
