@@ -50,6 +50,7 @@ jobs:
     
     - name: Test with pytest
       run: |
+        compare_args=$(test -d .benchmark && echo --benchmark-compare --benchmark-compare-fail=mean:5%)
         pytest test \
           --cov=src \
           --cov-report=html:test-results/coverage \
@@ -57,8 +58,7 @@ jobs:
           --cov-report=lcov:test-results/coverage.lcov \
           --html=test-results/report/report.html \
           --benchmark-autosave \
-          --benchmark-compare \
-          --benchmark-compare-fail=mean:5%
+          $compare_args
 
     - name: Post coverage report to Coveralls
       uses: coverallsapp/github-action@master
