@@ -30,9 +30,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint
     yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "ABS([33,1])"
-    result = _pcom.ParseSuccess(
-        _build.absolute(_mexpr.UnitOutput(33, 1)), 11
-    )
+    result = _pcom.ParseSuccess(_build.absolute(_mexpr.UnitOutput(33, 1)), 11)
     yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = "[-6,1] "
@@ -67,6 +65,17 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint
     )
     yield _ExpressionTestCase(string, result)
 
+    string = "(1+COS(C_tilt))*0.5*tSky + (1-]COS(C_tilt))*0.5*tAmb"
+    result = _pcom.ParseError(
+        error_message=(
+            "Expected number, variable, function call, opening square bracket or opening parenthesis "
+            'but found closing square bracket ("]")'
+        ),
+        input_string=string,
+        error_start=30,
+    )
+    yield _ExpressionTestCase(string, result)
+
     string = "((tSky+273.15)**4)*5.67*(10**-8)*3.6"
     t_sky = _build.create_variable("tSky")
     result = _pcom.ParseSuccess(
@@ -94,14 +103,14 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint
 
     string = "x*y**z"
     x, y, z = _build.create_variables("x y z")
-    result = _pcom.ParseSuccess(x * (y ** z), 6)
+    result = _pcom.ParseSuccess(x * (y**z), 6)
     yield _ExpressionTestCase(string, result, benchmark=False)
 
     string = ""
     result = _pcom.ParseError(
         error_message="Expected number, variable, function call, opening "
-                      "square bracket or opening parenthesis but found "
-                      "end of input",
+        "square bracket or opening parenthesis but found "
+        "end of input",
         input_string=string,
         error_start=0,
     )
@@ -110,8 +119,8 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint
     string = "((tSky+)"
     result = _pcom.ParseError(
         error_message="Expected number, variable, function call, opening "
-                      "square bracket or opening parenthesis but found "
-                      'closing parenthesis (")")',
+        "square bracket or opening parenthesis but found "
+        'closing parenthesis (")")',
         input_string=string,
         error_start=7,
     )
@@ -128,8 +137,8 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint
     string = "(10**-)"
     result = _pcom.ParseError(
         error_message="Expected number, variable, function call, opening "
-                      "square bracket or opening parenthesis but found "
-                      'closing parenthesis (")")',
+        "square bracket or opening parenthesis but found "
+        'closing parenthesis (")")',
         input_string=string,
         error_start=6,
     )

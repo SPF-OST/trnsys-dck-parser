@@ -113,17 +113,9 @@ class Parser(_pcom.ParserBase[_exp.Expression]):
 
     def _unit_and_output_number(self) -> _tp.Tuple[int, int]:
         unit_number = int(self._expect(_petok.Tokens.POSITIVE_INTEGER))
-        self._check_non_negative(unit_number, "Unit number")
 
         self._expect(_petok.Tokens.COMMA)
 
         output_number = int(self._expect(_petok.Tokens.POSITIVE_INTEGER))
-        self._check_non_negative(output_number, "Output number")
 
         return unit_number, output_number
-
-    def _check_non_negative(self, integer: int, what: str) -> None:
-        if integer >= 0:
-            return
-
-        self._raise_parsing_error(f"{what} numbers must be non-negative.")
