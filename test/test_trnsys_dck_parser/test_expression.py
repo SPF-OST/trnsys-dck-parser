@@ -17,6 +17,10 @@ class _ExpressionTestCase:
     parser_result: _pexpr.ParseResult
     benchmark: bool = True
 
+    @property
+    def id(self) -> str:
+        return f"{self.string[:3]},,{self.string[-3:]}"
+
 
 def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint: disable=too-many-statements
     result: _pcom.ParseResult[_mexpr.Expression]
@@ -149,7 +153,7 @@ def _get_expression_test_cases() -> _tp.Iterable[_ExpressionTestCase]:  # pylint
     yield _ExpressionTestCase(string, result, benchmark=False)
 
 
-@_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.string)
+@_pt.mark.parametrize("test_case", _get_expression_test_cases(), ids=lambda etc: etc.id)
 def test_expression(test_case: _ExpressionTestCase, benchmark) -> None:
     if test_case.benchmark:
         actual_expression = benchmark(_build.parse_expression, test_case.string)

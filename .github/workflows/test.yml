@@ -64,9 +64,17 @@ jobs:
       run: |
         compare_args=$(test -d .benchmarks && echo \
           --benchmark-compare \
-          --benchmark-compare-fail=mean:5% \
-          --benchmark-histogram='test-results/benchmark/histogram')
-        pytest test --benchmark-autosave $compare_args      
+          --benchmark-compare-fail=mean:5%) \
+        pytest test --benchmark-autosave $compare_args
+        
+    - name: Create histograms
+      shell: bash {0}
+      run: |
+        if [ -d .benchmarks ]; then
+          py.test-benchmark compare --histogram='test-results/benchmark/histogram'
+        else
+          echo "No previous benchmarks found."
+        fi
 
     - name: Post coverage report to Coveralls
       uses: coverallsapp/github-action@v2
